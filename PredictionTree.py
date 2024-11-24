@@ -1,4 +1,6 @@
 import pandas as ps
+import numpy as np
+from sklearn import tree
 
 data = ps.read_csv("student-por.csv", sep=';')
 
@@ -10,5 +12,23 @@ data['pass'] = data.apply(lambda row: 1 if (row['G1']+row['G2']+row['G3']) >= 35
 #### deletes all entries of the grades in each row
 data = data.drop(['G1','G2','G3'], axis=1)
 
-#### .head() is first 5 rows
-print(data.head())
+data = ps.get_dummies(data, columns=['sex', 'school', 'address', 'famsize', 'Pstatus', 'Mjob', 'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid', 'activities', 'nursery', 'higher', 'internet', 'romantic'])
+
+data = data.sample(frac=1)
+
+data_train = data[:500]
+data_test = data[500:]
+
+data_train_att = data_train.drop(['pass'], axis=1)
+data_train_pass = data_train['pass']
+
+data_test_att = data_test.drop(['pass'], axis=1)
+data_test_pass = data_test['pass']
+
+data_att = data.drop(['pass'], axis=1)
+data_pass = data['pass']
+
+print("Passing: %d out of %d" % (np.sum(data_pass), len(data_pass)))
+
+t = tree.DecisionTreeClassifier(criterion="entropy", max_depth=5)
+t = t.fit(data_train_att, data_train_pass)
